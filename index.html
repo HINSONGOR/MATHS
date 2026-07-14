@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>HINSON 數學深海王國</title>
+<link rel="stylesheet" href="style.css?v=1">
+<link rel="stylesheet" href="arcade.css?v=1">
+<script>
+  if(location.hostname==='localhost'){
+    let _lrh=null;
+    setInterval(async()=>{
+      try{
+        const r=await fetch('/index.html?_='+Date.now(),{cache:'no-store'});
+        const t=await r.text();
+        const h=t.length+'|'+t.slice(0,120);
+        if(_lrh!==null&&_lrh!==h)location.reload();
+        _lrh=h;
+      }catch(e){}
+    },4000);
+  }
+</script>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     LOADING SCREEN
+══════════════════════════════════════════════ -->
+<div id="screen-loading" class="screen active">
+  <div class="ocean-bg-load">
+    <div class="light-ray lr1"></div>
+    <div class="light-ray lr2"></div>
+    <div class="light-ray lr3"></div>
+  </div>
+  <div class="loading-center">
+    <div class="logo-blocks">
+      <span class="logo-block">數</span>
+      <span class="logo-block">學</span>
+      <span class="logo-block">海</span>
+    </div>
+    <h1 class="game-main-title">HINSON 數學深海王國</h1>
+    <p class="game-sub-title">小六數學練習平台</p>
+    <div class="load-track">
+      <div class="load-fill" id="load-fill" style="width:0%;height:100%;background:linear-gradient(90deg,#0077b6,#00c8ff);animation:cssLoadFill 2.5s ease forwards;"></div>
+    </div>
+    <style>@keyframes cssLoadFill{0%{width:0%}60%{width:75%}100%{width:100%}}</style>
+    <p class="load-msg" id="load-msg">正在探索深海...</p>
+  </div>
+  <div class="loading-seabed">
+    <span>🪸</span><span>🐚</span><span>⭐</span><span>🪸</span><span>🦀</span><span>🐚</span><span>⭐</span><span>🪸</span>
+  </div>
+  <div id="load-bubbles" class="load-bubble-container"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     DASHBOARD
+══════════════════════════════════════════════ -->
+<div id="screen-dashboard" class="screen">
+
+  <header class="top-bar">
+    <div class="tb-left">
+      <span class="tb-logo">🌊</span>
+      <div>
+        <div class="tb-title">數學深海王國</div>
+        <div class="tb-brand">HINSON</div>
+      </div>
+    </div>
+    <div class="tb-stats">
+      <div class="stat-pill xp-pill">💎<span id="s-xp">0</span>XP</div>
+      <div class="stat-pill coin-pill">🐚<span id="s-coins">0</span></div>
+      <div class="stat-pill lv-pill">Lv.<span id="s-lv">1</span></div>
+    </div>
+    <div class="tb-btns">
+      <button class="tbtn" onclick="openSettingsModal()" title="設定">⚙️</button>
+      <button class="tbtn" onclick="openParentPin()" title="家長模式">👨‍👩‍👧</button>
+    </div>
+  </header>
+
+  <div class="xp-track-wrap">
+    <div class="xp-track">
+      <div class="xp-fill" id="xp-fill"></div>
+    </div>
+    <span class="xp-label" id="xp-label">0 / 100 XP → Lv.2</span>
+  </div>
+
+  <div class="welcome-bar">
+    <div class="welcome-left">
+      <span class="avatar-icon">🤿</span>
+      <div>
+        <div class="welcome-name">歡迎，<span id="player-name-display">深海探險家</span>！</div>
+        <div class="streak-line">🔥 連續登入 <span id="streak-count">0</span> 天</div>
+      </div>
+    </div>
+    <button class="daily-btn" id="daily-btn" onclick="tryShowDaily()">🎁 每日獎勵</button>
+  </div>
+
+  <h2 class="section-hd">🌊 選擇學習海域</h2>
+
+  <div class="modules-grid">
+    <button class="mod-card mc-arcade arcade-glow" onclick="showScreen('screen-arcade-hub');refreshArcadeBest();">
+      <div class="mc-icon">🎮</div>
+      <div class="mc-name">打機速算樂園</div>
+      <div class="mc-xp">氣球 + 賽車模式</div>
+      <div class="mc-bar"><div class="mc-bar-fill" style="width:100%"></div></div>
+    </button>
+    <button class="mod-card mc-blue" onclick="launchModule('integer')">
+      <div class="mc-icon">🔢</div>
+      <div class="mc-name">整數運算礁區</div>
+      <div class="mc-xp">+8 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-integer"></div></div>
+    </button>
+    <button class="mod-card mc-teal" onclick="launchModule('fraction')">
+      <div class="mc-icon">🍕</div>
+      <div class="mc-name">分數珊瑚礁</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-fraction"></div></div>
+    </button>
+    <button class="mod-card mc-cyan" onclick="launchModule('decimal')">
+      <div class="mc-icon">🔡</div>
+      <div class="mc-name">小數潛水艙</div>
+      <div class="mc-xp">+8 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-decimal"></div></div>
+    </button>
+    <button class="mod-card mc-purple" onclick="launchModule('percent')">
+      <div class="mc-icon">📊</div>
+      <div class="mc-name">百分率燈塔</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-percent"></div></div>
+    </button>
+    <button class="mod-card mc-orange" onclick="launchModule('ratio')">
+      <div class="mc-icon">⚖️</div>
+      <div class="mc-name">比例珊瑚海</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-ratio"></div></div>
+    </button>
+    <button class="mod-card mc-indigo" onclick="launchModule('algebra')">
+      <div class="mc-icon">🔤</div>
+      <div class="mc-name">代數深溝</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-algebra"></div></div>
+    </button>
+    <button class="mod-card mc-green" onclick="launchModule('shape')">
+      <div class="mc-icon">📐</div>
+      <div class="mc-name">圖形寶藏室</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-shape"></div></div>
+    </button>
+    <button class="mod-card mc-red" onclick="launchModule('speed')">
+      <div class="mc-icon">🐬</div>
+      <div class="mc-name">速率洋流道</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-speed"></div></div>
+    </button>
+    <button class="mod-card mc-coral" onclick="launchModule('word')">
+      <div class="mc-icon">📝</div>
+      <div class="mc-name">文字題岩洞</div>
+      <div class="mc-xp">+12 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-word"></div></div>
+    </button>
+    <button class="mod-card mc-gold" onclick="launchModule('data')">
+      <div class="mc-icon">📈</div>
+      <div class="mc-name">數據觀測站</div>
+      <div class="mc-xp">+8 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-data"></div></div>
+    </button>
+    <button class="mod-card mc-amber tsa-glow" onclick="launchModule('tsa')">
+      <div class="mc-icon">🎯</div>
+      <div class="mc-name">呈分試挑戰</div>
+      <div class="mc-xp">+15 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-tsa"></div></div>
+    </button>
+    <button class="mod-card mc-electric" onclick="launchModule('mental')">
+      <div class="mc-icon">⚡</div>
+      <div class="mc-name">混合速算特訓</div>
+      <div class="mc-xp">+12 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-mental"></div></div>
+    </button>
+    <div class="mod-section">📚 小學數學新思維 按書練習</div>
+    <button class="mod-card mc-forest" onclick="showScreen('screen-book6ua')">
+      <div class="mc-icon">📗</div>
+      <div class="mc-name">新思維 6上A</div>
+      <div class="mc-xp">3 個單元 ›</div>
+      <div class="mc-bar"><div class="mc-bar-fill" style="width:0%"></div></div>
+    </button>
+    <button class="mod-card mc-terr" onclick="showScreen('screen-book6ub')">
+      <div class="mc-icon">📙</div>
+      <div class="mc-name">新思維 6上B</div>
+      <div class="mc-xp">3 個單元 ›</div>
+      <div class="mc-bar"><div class="mc-bar-fill" style="width:0%"></div></div>
+    </button>
+    <button class="mod-card mc-navy" onclick="showScreen('screen-book6da')">
+      <div class="mc-icon">📘</div>
+      <div class="mc-name">新思維 6下A</div>
+      <div class="mc-xp">4 個單元 ›</div>
+      <div class="mc-bar"><div class="mc-bar-fill" style="width:0%"></div></div>
+    </button>
+    <button class="mod-card mc-berry" onclick="showScreen('screen-book6db')">
+      <div class="mc-icon">📕</div>
+      <div class="mc-name">新思維 6下B</div>
+      <div class="mc-xp">2 個單元 ›</div>
+      <div class="mc-bar"><div class="mc-bar-fill" style="width:0%"></div></div>
+    </button>
+    <button class="mod-card mc-dark" onclick="launchModule('wrong')">
+      <div class="mc-icon">🦀</div>
+      <div class="mc-name">錯題重溫礁</div>
+      <div class="mc-xp">+12 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-wrong"></div></div>
+    </button>
+    <button class="mod-card mc-teal" onclick="showReport()">
+      <div class="mc-icon">🐳</div>
+      <div class="mc-name">深海探索報告</div>
+      <div class="mc-xp">查看進度</div>
+      <div class="mc-bar"><div class="mc-bar-fill" style="width:100%"></div></div>
+    </button>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════
+     BOOK 6UA UNIT SELECT
+══════════════════════════════════════════════ -->
+<div id="screen-book6ua" class="screen">
+  <div class="quiz-bar">
+    <button class="back-btn" onclick="showScreen('screen-dashboard')">← 返回</button>
+    <div class="quiz-mod-name">📗 新思維 6上A</div>
+    <div></div>
+  </div>
+  <div class="modules-grid" style="padding-top:1rem">
+    <div class="mod-section">選擇單元</div>
+    <button class="mod-card mc-forest" onclick="launchModule('book6ua1')">
+      <div class="mc-icon">➗</div>
+      <div class="mc-name">① 小數除法</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-book6ua1"></div></div>
+    </button>
+    <button class="mod-card mc-navy" onclick="launchModule('book6ua2')">
+      <div class="mc-icon">🔄</div>
+      <div class="mc-name">② 小數分數</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-book6ua2"></div></div>
+    </button>
+    <button class="mod-card mc-terr" onclick="launchModule('book6ua3')">
+      <div class="mc-icon">📊</div>
+      <div class="mc-name">③ 平均數</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-book6ua3"></div></div>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     BOOK 6UB UNIT SELECT
+══════════════════════════════════════════════ -->
+<div id="screen-book6ub" class="screen">
+  <div class="quiz-bar">
+    <button class="back-btn" onclick="showScreen('screen-dashboard')">← 返回</button>
+    <div class="quiz-mod-name">📙 新思維 6上B</div>
+    <div></div>
+  </div>
+  <div class="modules-grid" style="padding-top:1rem">
+    <div class="mod-section">選擇單元</div>
+    <button class="mod-card mc-terr" onclick="launchModule('book6ub5')">
+      <div class="mc-icon">💯</div>
+      <div class="mc-name">⑤ 百分數</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-book6ub5"></div></div>
+    </button>
+    <button class="mod-card mc-forest" onclick="launchModule('book6ub6')">
+      <div class="mc-icon">🔁</div>
+      <div class="mc-name">⑥ 對稱</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-book6ub6"></div></div>
+    </button>
+    <button class="mod-card mc-navy" onclick="launchModule('book6ub7')">
+      <div class="mc-icon">🧊</div>
+      <div class="mc-name">⑦ 容量和體積</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-book6ub7"></div></div>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     BOOK 6DA UNIT SELECT
+══════════════════════════════════════════════ -->
+<div id="screen-book6da" class="screen">
+  <div class="quiz-bar">
+    <button class="back-btn" onclick="showScreen('screen-dashboard')">← 返回</button>
+    <div class="quiz-mod-name">📘 新思維 6下A</div>
+    <div></div>
+  </div>
+  <div class="modules-grid" style="padding-top:1rem">
+    <div class="mod-section">選擇單元</div>
+    <button class="mod-card mc-navy" onclick="launchModule('book6da1')">
+      <div class="mc-icon">📊</div>
+      <div class="mc-name">① 百分數的應用</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-book6da1"></div></div>
+    </button>
+    <button class="mod-card mc-forest" onclick="launchModule('book6da2')">
+      <div class="mc-icon">📐</div>
+      <div class="mc-name">② 角和度</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-book6da2"></div></div>
+    </button>
+    <button class="mod-card mc-terr" onclick="launchModule('book6da3')">
+      <div class="mc-icon">⭕</div>
+      <div class="mc-name">③ 圓周</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-book6da3"></div></div>
+    </button>
+    <button class="mod-card mc-berry" onclick="launchModule('book6da4')">
+      <div class="mc-icon">🚀</div>
+      <div class="mc-name">④ 速率</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-book6da4"></div></div>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     BOOK 6DB UNIT SELECT
+══════════════════════════════════════════════ -->
+<div id="screen-book6db" class="screen">
+  <div class="quiz-bar">
+    <button class="back-btn" onclick="showScreen('screen-dashboard')">← 返回</button>
+    <div class="quiz-mod-name">新思維 6下B</div>
+    <div class="quiz-prog"></div>
+  </div>
+  <div class="modules-grid" style="padding-top:1rem">
+    <div class="mod-section">選擇單元</div>
+    <button class="mod-card mc-berry" onclick="launchModule('book6db5')">
+      <div class="mc-icon">✏️</div>
+      <div class="mc-name">⑤ 簡易方程</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-book6db5"></div></div>
+    </button>
+    <button class="mod-card mc-terr" onclick="launchModule('book6db6')">
+      <div class="mc-icon">⭕</div>
+      <div class="mc-name">⑥ 圓面積</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-book6db6"></div></div>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     QUIZ SCREEN
+══════════════════════════════════════════════ -->
+<div id="screen-quiz" class="screen">
+
+  <div class="quiz-bar">
+    <button class="back-btn" onclick="confirmExitQuiz()">← 返回</button>
+    <div class="quiz-mod-name" id="quiz-mod-name">模組</div>
+    <div class="quiz-prog" id="quiz-prog">1 / 10</div>
+  </div>
+
+  <div class="quiz-live-stats">
+    <span>💎 <b id="qlive-xp">0</b> XP</span>
+    <span>🐚 <b id="qlive-coins">0</b></span>
+    <span class="combo-badge hidden" id="combo-badge">🔥 連擊！</span>
+    <button class="timer-toggle-btn" id="timer-toggle-btn" onclick="cycleTimer()" title="點擊調整計時器">⏱ 關</button>
+  </div>
+
+  <div class="timer-wrap hidden" id="timer-wrap">
+    <div class="timer-track">
+      <div class="timer-fill" id="timer-fill"></div>
+    </div>
+    <span class="timer-label" id="timer-label">45s</span>
+    <span class="timer-bonus hidden" id="timer-bonus">💎 速答獎勵！</span>
+  </div>
+
+  <div class="quiz-body">
+
+    <div class="passage-panel hidden" id="passage-panel">
+      <div class="passage-top-row">
+        <span class="passage-title-tag" id="passage-title-tag">題目資料</span>
+      </div>
+      <div class="passage-text" id="passage-text"></div>
+    </div>
+
+    <div class="quiz-questions-area">
+
+      <div class="q-card">
+        <div class="q-card-row1">
+          <span class="q-num-tag" id="q-num-tag">第 1 題</span>
+          <span class="q-type-tag" id="q-type-tag"></span>
+        </div>
+        <div class="q-text" id="q-text">載入中...</div>
+
+        <div class="fill-section hidden" id="fill-section">
+          <input type="text" id="fill-input" class="fill-box" placeholder="輸入答案..."
+                 onkeydown="if(event.key==='Enter')submitFill()">
+          <button class="submit-fill-btn" onclick="submitFill()">✓ 提交</button>
+          <button class="skip-fill-btn" onclick="checkAnswer('skip')">跳過</button>
+        </div>
+      </div>
+
+      <div class="options-grid" id="options-grid"></div>
+
+      <div class="result-banner hidden" id="result-banner">
+        <div class="result-icon" id="result-icon">✅</div>
+        <div class="result-msg" id="result-msg">答對了！</div>
+        <div class="result-earn" id="result-earn">+10 XP  +5 🐚</div>
+      </div>
+
+      <div class="teacher-panel hidden" id="teacher-panel">
+        <div class="teacher-top">
+          <span class="teacher-robot">🤖</span>
+          <span class="teacher-label">小老師講解</span>
+        </div>
+        <div class="teacher-body" id="teacher-body"></div>
+        <div class="wrong-why" id="wrong-why"></div>
+        <button class="next-q-btn" id="next-q-btn" onclick="advanceQ()">下一題 →</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     WRONG QUESTIONS LIST
+══════════════════════════════════════════════ -->
+<div id="screen-wrong" class="screen">
+  <div class="screen-hd">
+    <button class="back-btn" onclick="showScreen('screen-dashboard')">← 返回</button>
+    <h2>🦀 錯題重溫礁</h2>
+    <div></div>
+  </div>
+  <div class="wrong-body" id="wrong-body"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     REPORT
+══════════════════════════════════════════════ -->
+<div id="screen-report" class="screen">
+  <div class="screen-hd">
+    <button class="back-btn" onclick="showScreen('screen-dashboard')">← 返回</button>
+    <h2>🐳 深海探索報告</h2>
+    <div></div>
+  </div>
+  <div class="report-body" id="report-body"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PARENT MODE
+══════════════════════════════════════════════ -->
+<div id="screen-parent" class="screen">
+  <div class="screen-hd parent-hd">
+    <button class="back-btn" onclick="showScreen('screen-dashboard')">← 退出</button>
+    <h2>👨‍👩‍👧 家長專區</h2>
+    <div></div>
+  </div>
+  <div class="ptabs-bar">
+    <button class="ptab active" id="ptab-report-btn" onclick="switchPTab('report')">📊 學習報告</button>
+    <button class="ptab" id="ptab-qbank-btn" onclick="switchPTab('qbank')">📚 題目管理</button>
+  </div>
+  <div class="parent-body" id="parent-body"></div>
+  <div class="parent-qb-body hidden" id="parent-qb-body">
+    <div class="cqb-section">
+      <div class="cqb-header">
+        <span>📚 自訂題目庫 <b id="cqb-count">0</b> 題</span>
+        <button class="eb-btn green-eb" onclick="openQEditor()">➕ 手動新增</button>
+      </div>
+      <div id="cqb-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     ARCADE HUB
+══════════════════════════════════════════════ -->
+<div id="screen-arcade-hub" class="screen">
+  <div class="screen-hd">
+    <button class="back-btn" onclick="showScreen('screen-dashboard')">← 返回</button>
+    <h2>🎮 打機速算樂園</h2>
+    <div></div>
+  </div>
+  <div class="arcade-grid">
+    <button class="arc-card arc-blue" onclick="startArcade('mult')">
+      <div class="arc-icon">🎈</div>
+      <div class="arc-name">乘法遊戲</div>
+      <div class="arc-mode">氣球射擊模式</div>
+      <div class="arc-best">最高分：<span id="ab-mult">0</span></div>
+    </button>
+    <button class="arc-card arc-teal" onclick="startArcade('div')">
+      <div class="arc-icon">🎈</div>
+      <div class="arc-name">除法遊戲</div>
+      <div class="arc-mode">氣球射擊模式</div>
+      <div class="arc-best">最高分：<span id="ab-div">0</span></div>
+    </button>
+    <button class="arc-card arc-cyan" onclick="startArcade('dec')">
+      <div class="arc-icon">🎈</div>
+      <div class="arc-name">小數互換遊戲</div>
+      <div class="arc-mode">氣球射擊模式</div>
+      <div class="arc-best">最高分：<span id="ab-dec">0</span></div>
+    </button>
+    <button class="arc-card arc-purple" onclick="startArcade('addsub')">
+      <div class="arc-icon">🎈</div>
+      <div class="arc-name">加減法遊戲</div>
+      <div class="arc-mode">氣球射擊模式</div>
+      <div class="arc-best">最高分：<span id="ab-addsub">0</span></div>
+    </button>
+    <button class="arc-card arc-orange" onclick="startArcade('mult2')">
+      <div class="arc-icon">🏎️</div>
+      <div class="arc-name">雙位乘法遊戲</div>
+      <div class="arc-mode">賽車模式</div>
+      <div class="arc-best">最高分：<span id="ab-mult2">0</span></div>
+    </button>
+    <button class="arc-card arc-red" onclick="startArcade('div2')">
+      <div class="arc-icon">🏎️</div>
+      <div class="arc-name">雙位除法遊戲</div>
+      <div class="arc-mode">賽車模式</div>
+      <div class="arc-best">最高分：<span id="ab-div2">0</span></div>
+    </button>
+    <button class="arc-card arc-gold" onclick="startArcade('percent')">
+      <div class="arc-icon">🏎️</div>
+      <div class="arc-name">百份比遊戲</div>
+      <div class="arc-mode">賽車模式</div>
+      <div class="arc-best">最高分：<span id="ab-percent">0</span></div>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     ARCADE: BALLOON MODE
+══════════════════════════════════════════════ -->
+<div id="screen-balloon" class="screen arcade-screen">
+  <div class="arc-hud">
+    <button class="back-btn small-back" onclick="exitArcade()">← 退出</button>
+    <div class="arc-question" id="balloon-question">7 × 9 = ?</div>
+    <div class="arc-stats">
+      <span class="combo-badge hidden" id="balloon-combo-badge">🔥 連擊 x3</span>
+      <span class="arc-score">🏆 <b id="balloon-score">0</b></span>
+      <span class="arc-lives" id="balloon-lives">❤️❤️❤️</span>
+    </div>
+  </div>
+  <div class="arc-canvas-wrap">
+    <canvas id="balloon-canvas"></canvas>
+    <div class="arc-overlay hidden" id="balloon-start-overlay">
+      <div class="arc-overlay-box">
+        <h2 id="balloon-start-title">🎈 氣球大戰</h2>
+        <p>射爆寫住正確答案嘅氣球！錯答案唔好掂到，答案跌落地都會扣命。</p>
+        <button class="big-btn green-btn" onclick="beginBalloonRound()">開始遊戲 🚀</button>
+      </div>
+    </div>
+    <div class="arc-overlay hidden" id="balloon-over-overlay">
+      <div class="arc-overlay-box">
+        <h2>🎮 遊戲結束！</h2>
+        <p class="arc-final-score">得分：<span id="balloon-final-score">0</span></p>
+        <p class="arc-final-best">最高分：<span id="balloon-final-best">0</span></p>
+        <p class="arc-final-reward" id="balloon-final-reward">+0 XP  +0 🐚</p>
+        <button class="big-btn green-btn" onclick="beginBalloonRound()">🔄 再玩一次</button>
+        <button class="big-btn grey-btn mt8" onclick="exitArcade()">返回樂園</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     ARCADE: RACING MODE
+══════════════════════════════════════════════ -->
+<div id="screen-racing" class="screen arcade-screen">
+  <div class="arc-hud">
+    <button class="back-btn small-back" onclick="exitArcade()">← 退出</button>
+    <div class="arc-question" id="racing-question">23 × 4 = ?</div>
+    <div class="arc-stats">
+      <span class="combo-badge hidden" id="racing-combo-badge">🔥 連擊 x3</span>
+      <span class="arc-score">🏆 <b id="racing-score">0</b></span>
+      <span class="arc-lives" id="racing-lives">❤️❤️❤️</span>
+    </div>
+  </div>
+  <div class="arc-canvas-wrap">
+    <canvas id="racing-canvas"></canvas>
+    <div class="race-lane-btns">
+      <button class="lane-btn" onclick="moveLane(-1)">◀</button>
+      <button class="lane-btn" onclick="moveLane(1)">▶</button>
+    </div>
+    <div class="arc-overlay hidden" id="racing-start-overlay">
+      <div class="arc-overlay-box">
+        <h2 id="racing-start-title">🏎️ 星星飛車賽</h2>
+        <p>撞到啱嘅車道就安全過關，撞錯就扣命！可以撳兩側按鈕或用鍵盤 ← → 轉線。</p>
+        <button class="big-btn green-btn" onclick="beginRacingRound()">開始遊戲 🚀</button>
+      </div>
+    </div>
+    <div class="arc-overlay hidden" id="racing-over-overlay">
+      <div class="arc-overlay-box">
+        <h2>🎮 遊戲結束！</h2>
+        <p class="arc-final-score">得分：<span id="racing-final-score">0</span></p>
+        <p class="arc-final-best">最高分：<span id="racing-final-best">0</span></p>
+        <p class="arc-final-reward" id="racing-final-reward">+0 XP  +0 🐚</p>
+        <button class="big-btn green-btn" onclick="beginRacingRound()">🔄 再玩一次</button>
+        <button class="big-btn grey-btn mt8" onclick="exitArcade()">返回樂園</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════════ -->
+
+<!-- Daily Reward -->
+<div class="overlay hidden" id="modal-daily">
+  <div class="modal-box">
+    <h2 class="modal-title">🎁 每日登入獎勵</h2>
+    <p class="modal-sub">🔥 連續登入 <b id="daily-streak-num">1</b> 天</p>
+    <div class="reward-cards" id="reward-cards"></div>
+    <button class="big-btn green-btn" onclick="claimDaily()">🎉 領取獎勵！</button>
+  </div>
+</div>
+
+<!-- Level Up -->
+<div class="overlay hidden" id="modal-levelup">
+  <div class="modal-box glow-box">
+    <div class="lv-arrows">🐠🐠🐠</div>
+    <h2 class="modal-title">🎊 潛水深度提升！</h2>
+    <div class="lv-big">Level <span id="new-lv">2</span></div>
+    <p class="lv-flavor">深海探索等級提升！繼續前進！</p>
+    <button class="big-btn green-btn" onclick="closeModal('modal-levelup')">繼續探索！🤿</button>
+  </div>
+</div>
+
+<!-- Quiz Complete -->
+<div class="overlay hidden" id="modal-done">
+  <div class="modal-box">
+    <h2 class="modal-title">🎉 探索完成！</h2>
+    <div class="done-stats" id="done-stats"></div>
+    <button class="big-btn green-btn" onclick="closeModal('modal-done');showScreen('screen-dashboard')">返回主頁 🌊</button>
+    <button class="big-btn grey-btn mt8" onclick="retryModule()">🔄 重新挑戰</button>
+  </div>
+</div>
+
+<!-- Settings -->
+<div class="overlay hidden" id="modal-settings">
+  <div class="modal-box">
+    <button class="modal-x" onclick="closeModal('modal-settings')">✕</button>
+    <h2 class="modal-title">⚙️ 設定</h2>
+    <div class="setting-row">
+      <label class="set-label">👤 探險家名稱</label>
+      <input type="text" id="name-input" class="set-input" placeholder="輸入名稱...">
+    </div>
+    <div class="setting-row">
+      <label class="set-label">🔊 音效</label>
+      <label class="toggle">
+        <input type="checkbox" id="sfx-check" checked>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      </label>
+    </div>
+    <div class="setting-row">
+      <label class="set-label">🔐 更改家長密碼</label>
+      <input type="password" id="new-pin-input" class="set-input" maxlength="4" placeholder="新密碼（4位數字）">
+    </div>
+    <button class="big-btn green-btn" onclick="applySettings()">✓ 儲存設定</button>
+    <button class="big-btn red-btn mt8" onclick="openModal('modal-confirm-clear')">🗑️ 清除所有資料</button>
+  </div>
+</div>
+
+<!-- Parent PIN -->
+<div class="overlay hidden" id="modal-parent-pin">
+  <div class="modal-box">
+    <button class="modal-x" onclick="closeModal('modal-parent-pin')">✕</button>
+    <h2 class="modal-title">🔐 家長模式</h2>
+    <p class="modal-hint">請輸入4位數字密碼</p>
+    <p class="modal-hint-sm">（預設密碼：1234）</p>
+    <input type="password" id="pin-input" class="pin-box" maxlength="4" placeholder="● ● ● ●"
+           onkeydown="if(event.key==='Enter')verifyPin()">
+    <button class="big-btn green-btn" onclick="verifyPin()">確認 →</button>
+  </div>
+</div>
+
+<!-- Confirm Clear -->
+<div class="overlay hidden" id="modal-confirm-clear">
+  <div class="modal-box">
+    <h2 class="modal-title">⚠️ 警告</h2>
+    <p class="confirm-txt">確定要清除所有學習記錄嗎？<br>此操作無法撤銷！</p>
+    <button class="big-btn red-btn" onclick="doResetData()">確認清除</button>
+    <button class="big-btn grey-btn mt8" onclick="closeModal('modal-confirm-clear')">取消</button>
+  </div>
+</div>
+
+<!-- Confirm Exit Quiz -->
+<div class="overlay hidden" id="modal-confirm-exit">
+  <div class="modal-box">
+    <h2 class="modal-title">⚠️ 退出練習</h2>
+    <p class="confirm-txt">確定退出？當前進度不會儲存。</p>
+    <button class="big-btn red-btn" onclick="doExitQuiz()">確認退出</button>
+    <button class="big-btn grey-btn mt8" onclick="closeModal('modal-confirm-exit')">繼續練習</button>
+  </div>
+</div>
+
+<!-- Question Editor Modal -->
+<div class="overlay hidden" id="modal-q-editor">
+  <div class="modal-box q-editor-box">
+    <button class="modal-x" onclick="closeModal('modal-q-editor')">✕</button>
+    <h2 class="modal-title">✏️ 新增 / 編輯題目</h2>
+    <div class="setting-row">
+      <label class="set-label">題目類別</label>
+      <select id="qe-type" class="set-input">
+        <option value="integer">🔢 整數運算</option>
+        <option value="fraction">🍕 分數</option>
+        <option value="decimal">🔡 小數</option>
+        <option value="percent">📊 百分率</option>
+        <option value="ratio">⚖️ 比</option>
+        <option value="algebra">🔤 代數</option>
+        <option value="shape">📐 圖形</option>
+        <option value="speed">🐬 速率</option>
+        <option value="word">📝 文字題</option>
+        <option value="data">📈 數據</option>
+        <option value="tsa">🎯 呈分試</option>
+      </select>
+    </div>
+    <div class="setting-row">
+      <label class="set-label">題目文字</label>
+      <textarea id="qe-text" class="set-input qe-ta" rows="3" placeholder="輸入題目（可用 HTML，如 <sup>1</sup>/<sub>2</sub> 表示分數）..."></textarea>
+    </div>
+    <div class="qe-opts">
+      <div class="qe-opt-row">
+        <label class="qe-ans-radio"><input type="radio" name="qe-ans" value="0"> ✓</label>
+        <span class="qe-opt-lbl">A</span>
+        <input type="text" id="qe-opt0" class="set-input" placeholder="選項 A">
+      </div>
+      <div class="qe-opt-row">
+        <label class="qe-ans-radio"><input type="radio" name="qe-ans" value="1"> ✓</label>
+        <span class="qe-opt-lbl">B</span>
+        <input type="text" id="qe-opt1" class="set-input" placeholder="選項 B">
+      </div>
+      <div class="qe-opt-row">
+        <label class="qe-ans-radio"><input type="radio" name="qe-ans" value="2"> ✓</label>
+        <span class="qe-opt-lbl">C</span>
+        <input type="text" id="qe-opt2" class="set-input" placeholder="選項 C">
+      </div>
+      <div class="qe-opt-row">
+        <label class="qe-ans-radio"><input type="radio" name="qe-ans" value="3"> ✓</label>
+        <span class="qe-opt-lbl">D</span>
+        <input type="text" id="qe-opt3" class="set-input" placeholder="選項 D">
+      </div>
+    </div>
+    <div class="setting-row">
+      <label class="set-label">🤖 小老師解釋（選填）</label>
+      <textarea id="qe-expl" class="set-input qe-ta" rows="2" placeholder="輸入答案解釋..."></textarea>
+    </div>
+    <input type="hidden" id="qe-edit-id" value="">
+    <button class="big-btn green-btn" onclick="saveCustomQ()">✓ 儲存題目</button>
+  </div>
+</div>
+
+<!-- Particles -->
+<div id="particles" aria-hidden="true"></div>
+<audio id="arcade-bgm" loop preload="none"></audio>
+
+<script>
+window.addEventListener('error', function(e){
+  var el=document.getElementById('load-msg');
+  if(el){ el.style.color='red'; el.style.fontSize='0.75rem'; el.textContent='錯誤 行'+e.lineno+'：'+e.message+' ['+( e.filename||'').split('/').pop()+']'; }
+}, true);
+</script>
+<script src="app.js?v=1"></script>
+<script src="arcade.js?v=1"></script>
+<script>
+(function(){
+  var el=document.getElementById('load-msg');
+  if(typeof init==='undefined'){
+    if(el && el.style.color!=='red'){ el.style.color='orange'; el.textContent='app.js 載入失敗（init未定義）'; }
+  } else {
+    if(el && el.style.color!=='red') el.style.color='#80deea';
+    init();
+  }
+})();
+</script>
+</body>
+</html>
