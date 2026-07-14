@@ -11,18 +11,18 @@
 <link rel="stylesheet" href="style.css?v=1">
 <link rel="stylesheet" href="arcade.css?v=1">
 <script>
-  if(location.hostname==='localhost'){
+  (function(){
     let _lrh=null;
     setInterval(async()=>{
       try{
-        const r=await fetch('/index.html?_='+Date.now(),{cache:'no-store'});
+        const r=await fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'});
         const t=await r.text();
         const h=t.length+'|'+t.slice(0,120);
         if(_lrh!==null&&_lrh!==h)location.reload();
         _lrh=h;
       }catch(e){}
-    },4000);
-  }
+    },5000);
+  })();
 </script>
 </head>
 <body>
