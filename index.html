@@ -478,7 +478,7 @@
   <div class="screen-hd">
     <button class="back-btn" onclick="showScreen('screen-dashboard')">← 返回</button>
     <h2>🎮 打機速算樂園</h2>
-    <div></div>
+    <button id="arcade-mute-btn" class="mute-btn" onclick="toggleArcadeMusic()">🔊</button>
   </div>
   <div class="arcade-grid">
     <button class="arc-card arc-blue" onclick="startArcade('mult')">
@@ -506,9 +506,9 @@
       <div class="arc-best">最高分：<span id="ab-addsub">0</span></div>
     </button>
     <button class="arc-card arc-orange" onclick="startArcade('mult2')">
-      <div class="arc-icon">🏎️</div>
+      <div class="arc-icon">✏️</div>
       <div class="arc-name">雙位乘法遊戲</div>
-      <div class="arc-mode">賽車模式</div>
+      <div class="arc-mode">輸入模式</div>
       <div class="arc-best">最高分：<span id="ab-mult2">0</span></div>
     </button>
     <button class="arc-card arc-red" onclick="startArcade('div2')">
@@ -594,6 +594,46 @@
         <p class="arc-final-best">最高分：<span id="racing-final-best">0</span></p>
         <p class="arc-final-reward" id="racing-final-reward">+0 XP  +0 🐚</p>
         <button class="big-btn green-btn" onclick="beginRacingRound()">🔄 再玩一次</button>
+        <button class="big-btn grey-btn mt8" onclick="exitArcade()">返回樂園</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     ARCADE: TYPING MODE
+══════════════════════════════════════════════ -->
+<div id="screen-typing" class="screen arcade-screen">
+  <div class="arc-hud">
+    <button class="back-btn small-back" onclick="exitArcade()">← 退出</button>
+    <div class="arc-question" id="typing-question">47 × 8 = ?</div>
+    <div class="arc-stats">
+      <span class="combo-badge hidden" id="typing-combo-badge">🔥 連擊 x3</span>
+      <span class="arc-score">🏆 <b id="typing-score">0</b></span>
+      <span class="arc-lives" id="typing-lives">❤️❤️❤️</span>
+    </div>
+  </div>
+  <div class="typing-game-area">
+    <div class="arc-overlay" id="typing-start-overlay">
+      <div class="arc-overlay-box">
+        <h2 id="typing-start-title">✏️ 雙位乘法遊戲</h2>
+        <p>睇題目，打出正確答案，按 Enter 或「確認」提交！越快越高分。</p>
+        <button class="big-btn green-btn" onclick="beginTypingRound()">開始遊戲 🚀</button>
+      </div>
+    </div>
+    <div id="typing-play-area" style="display:none">
+      <div class="typing-timer-bar"><div class="typing-timer-fill" id="typing-timer-fill"></div></div>
+      <input type="number" id="typing-input" class="typing-input" placeholder="輸入答案…" autocomplete="off" inputmode="numeric">
+      <button class="big-btn green-btn" style="max-width:300px;width:100%" onclick="submitTypingAnswer()">確認 ✓</button>
+      <div class="typing-feedback" id="typing-feedback"></div>
+    </div>
+    <div class="arc-overlay hidden" id="typing-over-overlay">
+      <div class="arc-overlay-box">
+        <h2>🎮 遊戲結束！</h2>
+        <p class="arc-final-score">得分：<span id="typing-final-score">0</span></p>
+        <p class="arc-final-best">最高分：<span id="typing-final-best">0</span></p>
+        <p class="arc-final-reward" id="typing-final-reward">+0 XP  +0 🐚</p>
+        <button class="big-btn green-btn" onclick="beginTypingRound()">🔄 再玩一次</button>
         <button class="big-btn grey-btn mt8" onclick="exitArcade()">返回樂園</button>
       </div>
     </div>

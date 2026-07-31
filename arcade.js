@@ -12,12 +12,13 @@ const ARCADE_CATS = {
   div:     { mode:'balloon', name:'除法遊戲',     icon:'🎈', gen: genDiv },
   dec:     { mode:'balloon', name:'小數互換遊戲', icon:'🎈', gen: genDec },
   addsub:  { mode:'balloon', name:'加減法遊戲',   icon:'🎈', gen: genAddSub },
-  mult2:   { mode:'racing',  name:'雙位乘法遊戲', icon:'🏎️', gen: genMult2 },
+  mult2:   { mode:'typing',  name:'雙位乘法遊戲', icon:'✏️', gen: genMult2 },
   div2:    { mode:'racing',  name:'雙位除法遊戲', icon:'🏎️', gen: genDiv2 },
   percent: { mode:'racing',  name:'百份比遊戲',   icon:'🏎️', gen: genPercent },
 };
 
 let currentArcadeCat = null;
+let arcadeMuted = false;
 
 /* ── Question generators ── */
 function arRand(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
@@ -125,9 +126,17 @@ let arcadeMusicTimer = null;
 let arcadeMusicStep = 0;
 const ARCADE_MELODY = [523,659,784,659,523,392,440,523, 523,659,784,1047,784,659,523,440];
 
+function toggleArcadeMusic(){
+  arcadeMuted = !arcadeMuted;
+  const btn = document.getElementById('arcade-mute-btn');
+  if(btn) btn.textContent = arcadeMuted ? '🔇' : '🔊';
+  if(arcadeMuted){ stopArcadeMusic(); }
+  else if(BS||RS||TS){ startArcadeMusic(); }
+}
+
 function startArcadeMusic(){
   stopArcadeMusic();
-  if(!gs.sfx) return;
+  if(!gs.sfx || arcadeMuted) return;
   if(bgmAvailable === false){ startChiptuneLoop(); return; }
   const audio = document.getElementById('arcade-bgm');
   if(!audio){ startChiptuneLoop(); return; }
@@ -173,6 +182,13 @@ function startArcade(cat){
     document.getElementById('balloon-start-overlay').classList.remove('hidden');
     document.getElementById('balloon-over-overlay').classList.add('hidden');
     document.getElementById('balloon-question').textContent = '準備開始…';
+  } else if(def.mode==='typing'){
+    showScreen('screen-typing');
+    document.getElementById('typing-start-title').textContent = def.icon+' '+def.name;
+    document.getElementById('typing-start-overlay').classList.remove('hidden');
+    document.getElementById('typing-over-overlay').classList.add('hidden');
+    document.getElementById('typing-play-area').style.display='none';
+    document.getElementById('typing-question').textContent = '準備開始…';
   } else {
     showScreen('screen-racing');
     document.getElementById('racing-start-title').textContent = def.icon+' '+def.name;
@@ -184,6 +200,7 @@ function startArcade(cat){
 function exitArcade(){
   stopBalloonGame();
   stopRacingGame();
+  stopTypingGame();
   stopArcadeMusic();
   refreshArcadeBest();
   showScreen('screen-arcade-hub');
@@ -515,6 +532,117 @@ function racingLoop(t){
 
   ctx.restore();
   RS.raf = requestAnimationFrame(racingLoop);
+}
+
+/* ════════════════════════════════════════════════
+   TYPING MODE
+   ════════════════════════════════════════════════ */
+let TS = null;
+const TYPING_TIME = 12;
+
+function beginTypingRound(){
+  document.getElementById('typing-start-overlay').classList.add('hidden');
+  document.getElementById('typing-over-overlay').classList.add('hidden');
+  document.getElementById('typing-play-area').style.display='';
+  TS = {
+    cat:currentArcadeCat, score:0, lives:3, combo:0,
+    correctAnswer:0, timeLeft:TYPING_TIME, timerIv:null, running:true
+  };
+  document.getElementById('typing-score').textContent='0';
+  document.getElementById('typing-lives').textContent=livesHeartString(3);
+  updateComboBadge('typing-combo-badge',0);
+  document.getElementById('typing-input').addEventListener('keydown', onTypingKey);
+  startArcadeMusic();
+  nextTypingQuestion();
+}
+
+function nextTypingQuestion(){
+  const def = ARCADE_CATS[TS.cat];
+  const q = def.gen();
+  TS.correctAnswer = q.answer;
+  TS.timeLeft = TYPING_TIME;
+  document.getElementById('typing-question').innerHTML = renderFrac(q.text);
+  document.getElementById('typing-input').value='';
+  document.getElementById('typing-input').focus();
+  const fb = document.getElementById('typing-feedback');
+  fb.textContent=''; fb.className='typing-feedback';
+  const fill = document.getElementById('typing-timer-fill');
+  fill.style.transition='none'; fill.style.width='100%'; fill.className='typing-timer-fill';
+  if(TS.timerIv) clearInterval(TS.timerIv);
+  TS.timerIv = setInterval(()=>{
+    TS.timeLeft -= 0.1;
+    const pct = Math.max(0, TS.timeLeft/TYPING_TIME*100);
+    fill.style.transition='width 0.1s linear';
+    fill.style.width=pct+'%';
+    if(pct<30) fill.className='typing-timer-fill danger';
+    if(TS.timeLeft<=0){
+      clearInterval(TS.timerIv);
+      TS.combo=0; updateComboBadge('typing-combo-badge',0);
+      TS.lives--;
+      document.getElementById('typing-lives').textContent=livesHeartString(TS.lives);
+      const fb2=document.getElementById('typing-feedback');
+      fb2.textContent=`時間到！正確答案：${TS.correctAnswer}`; fb2.className='typing-feedback wrong';
+      if(gs.sfx) playBeep(180,0.2,'sawtooth');
+      spawnParticles(false);
+      if(TS.lives<=0){ setTimeout(()=>endTypingGame(),800); }
+      else{ setTimeout(()=>{ if(TS&&TS.running) nextTypingQuestion(); },900); }
+    }
+  },100);
+}
+
+function onTypingKey(e){ if(e.key==='Enter') submitTypingAnswer(); }
+
+function submitTypingAnswer(){
+  if(!TS||!TS.running) return;
+  const val = parseFloat(document.getElementById('typing-input').value);
+  if(isNaN(val)) return;
+  clearInterval(TS.timerIv);
+  const correct = Math.abs(val-TS.correctAnswer)<0.01;
+  const fb = document.getElementById('typing-feedback');
+  if(correct){
+    TS.combo++;
+    updateComboBadge('typing-combo-badge',TS.combo);
+    const timeBonus = Math.floor(TS.timeLeft/TYPING_TIME*10);
+    const gain = 10 + Math.min(20,TS.combo*2) + timeBonus;
+    TS.score += gain;
+    document.getElementById('typing-score').textContent=TS.score;
+    fb.textContent=`✓ 正確！+${gain} 分`; fb.className='typing-feedback';
+    if(gs.sfx) playBeep(880,0.12,'sine');
+    spawnParticles(true);
+    setTimeout(()=>{ if(TS&&TS.running) nextTypingQuestion(); },600);
+  } else {
+    TS.combo=0; updateComboBadge('typing-combo-badge',0);
+    TS.lives--;
+    document.getElementById('typing-lives').textContent=livesHeartString(TS.lives);
+    fb.textContent=`✗ 正確答案：${TS.correctAnswer}`; fb.className='typing-feedback wrong';
+    if(gs.sfx) playBeep(180,0.2,'sawtooth');
+    spawnParticles(false);
+    if(TS.lives<=0){ setTimeout(()=>endTypingGame(),800); }
+    else{ setTimeout(()=>{ if(TS&&TS.running) nextTypingQuestion(); },900); }
+  }
+}
+
+function stopTypingGame(){
+  if(TS){ if(TS.timerIv) clearInterval(TS.timerIv); TS.running=false; TS=null; }
+  const inp=document.getElementById('typing-input');
+  if(inp) inp.removeEventListener('keydown',onTypingKey);
+}
+
+function endTypingGame(){
+  if(!TS) return;
+  if(TS.timerIv) clearInterval(TS.timerIv);
+  TS.running=false;
+  stopArcadeMusic();
+  if(gs.sfx){ playBeep(300,0.15,'square'); setTimeout(()=>playBeep(200,0.25,'square'),150); }
+  const best=setArcadeBest(TS.cat,TS.score);
+  const xpEarn=Math.round(TS.score*0.5);
+  const coinEarn=Math.round(TS.score*0.25);
+  addXP(xpEarn); addCoins(coinEarn); updateUI();
+  document.getElementById('typing-final-score').textContent=TS.score;
+  document.getElementById('typing-final-best').textContent=best;
+  document.getElementById('typing-final-reward').textContent=`+${xpEarn} XP  +${coinEarn} 🐚`;
+  document.getElementById('typing-play-area').style.display='none';
+  document.getElementById('typing-over-overlay').classList.remove('hidden');
 }
 
 /* ── Resize handling ── */

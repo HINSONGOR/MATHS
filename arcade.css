@@ -96,6 +96,47 @@
 .arc-final-best  { font-size: 0.85rem !important; color: var(--text-dim) !important; }
 .arc-final-reward { font-size: 0.95rem !important; color: var(--gold) !important; font-weight: 700; }
 
+/* ── Mute button ── */
+.mute-btn {
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px; color: #fff; font-size: 1.3rem;
+  padding: 4px 10px; cursor: pointer; flex-shrink: 0;
+}
+.mute-btn:active { background: rgba(255,255,255,0.2); }
+
+/* ── Typing mode ── */
+.typing-game-area {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 22px; padding: 24px; position: relative;
+}
+.typing-timer-bar {
+  width: 100%; max-width: 400px; height: 10px;
+  background: rgba(255,255,255,0.12); border-radius: 5px; overflow: hidden;
+}
+.typing-timer-fill {
+  height: 100%; width: 100%;
+  background: linear-gradient(90deg,#00c8d4,#00ff88);
+  border-radius: 5px; transition: width 0.1s linear;
+}
+.typing-timer-fill.danger { background: linear-gradient(90deg,#ff4444,#ff8800); }
+.typing-input {
+  width: 100%; max-width: 300px;
+  font-size: 2.6rem; font-weight: 900; text-align: center;
+  background: rgba(255,255,255,0.08); border: 2px solid var(--border);
+  border-radius: 14px; color: var(--pearl); padding: 14px 10px;
+  outline: none; -moz-appearance: textfield;
+}
+.typing-input::-webkit-outer-spin-button,
+.typing-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.typing-input:focus { border-color: var(--cyan); box-shadow: 0 0 14px rgba(0,200,212,0.35); }
+.typing-feedback {
+  font-size: 1.15rem; font-weight: 700; min-height: 1.6em;
+  color: #00ff88;
+}
+.typing-feedback.wrong { color: #ff5555; }
+#typing-play-area { display: flex; flex-direction: column; align-items: center; gap: 22px; width: 100%; }
+
 @media (max-width: 380px){
   .arc-hud { flex-wrap: wrap; padding: 10px 12px; }
   .arc-question { flex-basis: 100%; order: 3; font-size: 1.4rem; }
