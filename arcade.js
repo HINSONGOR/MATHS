@@ -114,6 +114,45 @@ function refreshArcadeBest(){
     const el = document.getElementById('ab-'+k);
     if(el) el.textContent = best[k]||0;
   });
+  const ni=document.getElementById('hub-player-name');
+  if(ni) ni.value=getPlayerName();
+}
+
+/* ── Leaderboard ── */
+function getLB(){ try{ return JSON.parse(localStorage.getItem('hinson_arcade_lb')||'[]'); }catch(e){ return []; } }
+function saveLBEntry(entry){
+  const lb=getLB(); lb.push(entry);
+  lb.sort((a,b)=>b.score-a.score);
+  if(lb.length>100) lb.length=100;
+  try{ localStorage.setItem('hinson_arcade_lb',JSON.stringify(lb)); }catch(e){}
+}
+function getPlayerName(){ return localStorage.getItem('hinson_arcade_name')||''; }
+function setPlayerName(n){ localStorage.setItem('hinson_arcade_name',(n||'').trim().slice(0,16)||'玩家'); }
+function fmtDate(){ const d=new Date(); return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`; }
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showLeaderboard(){ renderLeaderboard(); showScreen('screen-arcade-lb'); }
+function clearLeaderboard(){ if(!confirm('確定清除所有排行榜紀錄？')) return; localStorage.removeItem('hinson_arcade_lb'); renderLeaderboard(); }
+function renderLeaderboard(){
+  const lb=getLB();
+  const tbody=document.getElementById('lb-tbody');
+  if(!tbody) return;
+  const ni=document.getElementById('lb-player-name');
+  if(ni) ni.value=getPlayerName();
+  if(!lb.length){
+    tbody.innerHTML='<tr><td colspan="6" class="lb-empty">未有紀錄 — 快去玩一局！</td></tr>';
+    return;
+  }
+  tbody.innerHTML=lb.map((e,i)=>{
+    const rank=i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
+    return `<tr class="${i<3?'lb-top':''}">
+      <td class="lb-rank">${rank}</td>
+      <td class="lb-name">${escHtml(e.name||'?')}</td>
+      <td class="lb-score">${e.score}</td>
+      <td class="lb-mode">${escHtml(e.catName||'-')}</td>
+      <td class="lb-rounds">${e.rounds||0}</td>
+      <td class="lb-date">${e.date}</td>
+    </tr>`;
+  }).join('');
 }
 
 /* ── Arcade background music ──
@@ -233,7 +272,7 @@ function beginBalloonRound(){
   if(BS && BS.raf) cancelAnimationFrame(BS.raf);
   BS = {
     cat: currentArcadeCat, canvas, ctx: canvas.getContext('2d'),
-    score:0, lives:3, combo:0, speed:55,
+    score:0, lives:3, combo:0, speed:55, correctCount:0,
     balloons:[], running:true, lastTime: performance.now(), shake:0
   };
   document.getElementById('balloon-score').textContent = '0';
@@ -291,7 +330,7 @@ function hitBalloon(b){
     BS.combo++;
     updateComboBadge('balloon-combo-badge', BS.combo);
     const gain = 10 + Math.min(20, BS.combo*2);
-    BS.score += gain;
+    BS.correctCount++; BS.score += gain;
     document.getElementById('balloon-score').textContent = BS.score;
     if(gs.sfx) playBeep(880,0.12,'sine');
     spawnParticles(true);
@@ -324,6 +363,7 @@ function endBalloonGame(){
   stopArcadeMusic();
   if(gs.sfx){ playBeep(300,0.15,'square'); setTimeout(()=>playBeep(200,0.25,'square'),150); }
   const best = setArcadeBest(BS.cat, BS.score);
+  saveLBEntry({name:getPlayerName()||'?',score:BS.score,catName:ARCADE_CATS[BS.cat].name,rounds:BS.correctCount||0,date:fmtDate()});
   const xpEarn = Math.round(BS.score*0.5);
   const coinEarn = Math.round(BS.score*0.25);
   addXP(xpEarn); addCoins(coinEarn); updateUI();
@@ -400,7 +440,7 @@ function beginRacingRound(){
   RS = {
     cat: currentArcadeCat, canvas, ctx: canvas.getContext('2d'),
     score:0, lives:3, combo:0, speed:110,
-    lane:1, gate:null, running:true, lastTime: performance.now(),
+    lane:1, gate:null, running:true, lastTime: performance.now(), correctCount:0,
     roadOffset:0, shake:0
   };
   document.getElementById('racing-score').textContent = '0';
@@ -449,6 +489,7 @@ function endRacingGame(){
   stopArcadeMusic();
   if(gs.sfx){ playBeep(300,0.15,'square'); setTimeout(()=>playBeep(200,0.25,'square'),150); }
   const best = setArcadeBest(RS.cat, RS.score);
+  saveLBEntry({name:getPlayerName()||'?',score:RS.score,catName:ARCADE_CATS[RS.cat].name,rounds:RS.correctCount||0,date:fmtDate()});
   const xpEarn = Math.round(RS.score*0.5);
   const coinEarn = Math.round(RS.score*0.25);
   addXP(xpEarn); addCoins(coinEarn); updateUI();
@@ -507,7 +548,7 @@ function racingLoop(t){
         RS.combo++;
         updateComboBadge('racing-combo-badge', RS.combo);
         const gain = 10 + Math.min(20, RS.combo*2);
-        RS.score += gain;
+        RS.correctCount++; RS.score += gain;
         document.getElementById('racing-score').textContent = RS.score;
         if(gs.sfx) playBeep(880,0.12,'sine');
         spawnParticles(true);
@@ -545,7 +586,7 @@ function beginTypingRound(){
   document.getElementById('typing-over-overlay').classList.add('hidden');
   document.getElementById('typing-play-area').style.display='';
   TS = {
-    cat:currentArcadeCat, score:0, lives:3, combo:0,
+    cat:currentArcadeCat, score:0, lives:3, combo:0, correctCount:0,
     correctAnswer:0, timeLeft:TYPING_TIME, timerIv:null, running:true
   };
   document.getElementById('typing-score').textContent='0';
@@ -604,7 +645,7 @@ function submitTypingAnswer(){
     updateComboBadge('typing-combo-badge',TS.combo);
     const timeBonus = Math.floor(TS.timeLeft/TYPING_TIME*10);
     const gain = 10 + Math.min(20,TS.combo*2) + timeBonus;
-    TS.score += gain;
+    TS.correctCount++; TS.score += gain;
     document.getElementById('typing-score').textContent=TS.score;
     fb.textContent=`✓ 正確！+${gain} 分`; fb.className='typing-feedback';
     if(gs.sfx) playBeep(880,0.12,'sine');
@@ -635,6 +676,7 @@ function endTypingGame(){
   stopArcadeMusic();
   if(gs.sfx){ playBeep(300,0.15,'square'); setTimeout(()=>playBeep(200,0.25,'square'),150); }
   const best=setArcadeBest(TS.cat,TS.score);
+  saveLBEntry({name:getPlayerName()||'?',score:TS.score,catName:ARCADE_CATS[TS.cat].name,rounds:TS.correctCount||0,date:fmtDate()});
   const xpEarn=Math.round(TS.score*0.5);
   const coinEarn=Math.round(TS.score*0.25);
   addXP(xpEarn); addCoins(coinEarn); updateUI();

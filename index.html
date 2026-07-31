@@ -524,6 +524,41 @@
       <div class="arc-best">最高分：<span id="ab-percent">0</span></div>
     </button>
   </div>
+  <div class="lb-hub-row">
+    <div class="lb-name-set">
+      <span>👤</span>
+      <input id="hub-player-name" class="lb-name-input" placeholder="輸入你的名稱" maxlength="16"
+             oninput="setPlayerName(this.value)" onfocus="this.select()">
+    </div>
+    <button class="arc-lb-btn" onclick="showLeaderboard()">🏆 排行榜</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     ARCADE: LEADERBOARD
+══════════════════════════════════════════════ -->
+<div id="screen-arcade-lb" class="screen lb-screen">
+  <div class="screen-hd">
+    <button class="back-btn" onclick="showScreen('screen-arcade-hub');refreshArcadeBest()">← 返回</button>
+    <h2>🏆 排行榜</h2>
+    <div style="width:60px"></div>
+  </div>
+  <div class="lb-name-row">
+    <span>👤 玩家名稱：</span>
+    <input id="lb-player-name" class="lb-name-input" placeholder="輸入名稱" maxlength="16"
+           oninput="setPlayerName(this.value);document.getElementById('hub-player-name').value=this.value">
+  </div>
+  <div class="lb-wrap">
+    <table class="lb-table">
+      <thead>
+        <tr><th>#</th><th>姓名</th><th>分數</th><th>遊戲</th><th>回合</th><th>日期</th></tr>
+      </thead>
+      <tbody id="lb-tbody"></tbody>
+    </table>
+  </div>
+  <div class="lb-clear-row">
+    <button class="grey-btn small-btn" onclick="clearLeaderboard()">🗑 清除所有紀錄</button>
+  </div>
 </div>
 
 <!-- ══════════════════════════════════════════════
