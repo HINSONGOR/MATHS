@@ -1749,6 +1749,36 @@ function saveState(){
 }
 
 /* ════════════════════════════════════════════════
+   DAILY ACTIVITY TRACKER
+   ════════════════════════════════════════════════ */
+let _appOpenTs = Date.now();
+function _todayKey(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function _fmtHM(ts){ const d=new Date(ts); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+function getDailyLog(){ try{ return JSON.parse(localStorage.getItem('hinson_daily_log')||'{}'); }catch(e){ return {}; } }
+function _saveDailyLog(log){ try{ localStorage.setItem('hinson_daily_log',JSON.stringify(log)); }catch(e){} }
+function logSession(name, icon, done, correct, startTs){
+  const log=getDailyLog(); const k=_todayKey();
+  if(!log[k]) log[k]={sessions:[],appMins:0};
+  const mins=Math.max(1,Math.round((Date.now()-(startTs||Date.now()-60000))/60000));
+  log[k].sessions.push({name,icon:icon||'📚',done,correct,time:_fmtHM(startTs||Date.now()),mins});
+  const keys=Object.keys(log).sort(); if(keys.length>30) delete log[keys[0]];
+  _saveDailyLog(log);
+}
+function _flushAppTime(){
+  if(!_appOpenTs) return;
+  const mins=Math.floor((Date.now()-_appOpenTs)/60000);
+  if(mins<1){ return; }
+  const log=getDailyLog(); const k=_todayKey();
+  if(!log[k]) log[k]={sessions:[],appMins:0};
+  log[k].appMins=(log[k].appMins||0)+mins;
+  _saveDailyLog(log);
+  _appOpenTs=Date.now();
+}
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) _flushAppTime(); else _appOpenTs=Date.now(); });
+window.addEventListener('beforeunload',_flushAppTime);
+setInterval(_flushAppTime, 5*60*1000);
+
+/* ════════════════════════════════════════════════
    SCREEN MANAGEMENT
    ════════════════════════════════════════════════ */
 function showScreen(id){
@@ -1848,7 +1878,7 @@ function launchModule(key){
     mod: key, questions: pool, idx: 0,
     sessionXP: 0, sessionCoins: 0, sessionCorrect: 0,
     combo: 0, timerMode: 0, timerInterval: null, timerLeft: 0,
-    answered: false
+    answered: false, startTs: Date.now()
   };
 
   document.getElementById('quiz-mod-name').textContent = MOD_NAMES[key] || key;
@@ -2059,6 +2089,7 @@ function advanceQ(){
 
 function endQuiz(){
   stopTimer();
+  logSession(MOD_NAMES[qs.mod]||qs.mod, MOD_ICONS[qs.mod]||'📚', qs.questions.length, qs.sessionCorrect, qs.startTs);
   addXP(qs.sessionXP);
   addCoins(qs.sessionCoins);
 
@@ -2252,14 +2283,43 @@ function renderParentReport(){
     </div>`;
   });
 
+  // Daily activity summary
+  const dlog=getDailyLog(); const dk=_todayKey();
+  const todayD=dlog[dk]||{sessions:[],appMins:0};
+  const todayMins=todayD.appMins||0;
+  const timeStr=todayMins>=60?`${Math.floor(todayMins/60)}小時${todayMins%60}分鐘`:(todayMins>0?`${todayMins}分鐘`:'少於1分鐘');
+  const sessRows=todayD.sessions.length?todayD.sessions.map(s=>`
+    <div class="act-row">
+      <span class="act-time">${s.time}</span>
+      <span class="act-name">${s.icon} ${s.name}</span>
+      <span class="act-score">${s.correct}/${s.done} 正確 · ${s.mins}分鐘</span>
+    </div>`).join(''):`<div class="act-empty">今日未有練習紀錄</div>`;
+  const pastKeys=Object.keys(dlog).sort().filter(k=>k!==dk).slice(-6).reverse();
+  const histRows=pastKeys.length?pastKeys.map(k=>{
+    const d=dlog[k]; const m=d.appMins||0;
+    const mods=[...new Set(d.sessions.map(s=>s.name))].slice(0,2).join('、');
+    return `<div class="act-hist-row"><span class="act-hist-date">${k}</span><span class="act-hist-info">${m}分鐘${mods?' · '+mods:''}</span></div>`;
+  }).join(''):`<div class="act-empty">未有過去紀錄</div>`;
+
   body.innerHTML = `
-    <div class="report-stat-grid" style="margin-bottom:12px">
-      <div class="report-stat-box"><div class="report-stat-val">${totalDone}</div><div class="report-stat-label">總答題數</div></div>
-      <div class="report-stat-box"><div class="report-stat-val">${acc}%</div><div class="report-stat-label">整體正確率</div></div>
-      <div class="report-stat-box"><div class="report-stat-val">${gs.xp}</div><div class="report-stat-label">總XP</div></div>
-      <div class="report-stat-box"><div class="report-stat-val">${gs.level}</div><div class="report-stat-label">目前等級</div></div>
+    <div class="act-section">
+      <div class="act-section-hd">📅 今日 (${dk}) · ⏱ 使用時間：${timeStr}</div>
+      ${sessRows}
     </div>
-    <div class="report-mod-list">${rows}</div>
+    <div class="act-section" style="margin-top:12px">
+      <div class="act-section-hd">📊 最近7天</div>
+      ${histRows}
+    </div>
+    <div class="act-section" style="margin-top:12px">
+      <div class="act-section-hd">📈 整體成績</div>
+      <div class="report-stat-grid" style="margin:10px 0">
+        <div class="report-stat-box"><div class="report-stat-val">${totalDone}</div><div class="report-stat-label">總答題數</div></div>
+        <div class="report-stat-box"><div class="report-stat-val">${acc}%</div><div class="report-stat-label">整體正確率</div></div>
+        <div class="report-stat-box"><div class="report-stat-val">${gs.xp}</div><div class="report-stat-label">總XP</div></div>
+        <div class="report-stat-box"><div class="report-stat-val">${gs.level}</div><div class="report-stat-label">目前等級</div></div>
+      </div>
+      <div class="report-mod-list">${rows}</div>
+    </div>
   `;
 }
 

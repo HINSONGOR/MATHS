@@ -284,7 +284,7 @@ function beginBalloonRound(){
   if(BS && BS.raf) cancelAnimationFrame(BS.raf);
   BS = {
     cat: currentArcadeCat, canvas, ctx: canvas.getContext('2d'),
-    score:0, lives:3, combo:0, speed:55, correctCount:0,
+    score:0, lives:3, combo:0, speed:55, correctCount:0, startTs:Date.now(),
     balloons:[], running:true, lastTime: performance.now(), shake:0
   };
   document.getElementById('balloon-score').textContent = '0';
@@ -376,6 +376,7 @@ function endBalloonGame(){
   if(gs.sfx){ playBeep(300,0.15,'square'); setTimeout(()=>playBeep(200,0.25,'square'),150); }
   const best = setArcadeBest(BS.cat, BS.score);
   saveLBEntry({name:getPlayerName()||'?',score:BS.score,catName:ARCADE_CATS[BS.cat].name,rounds:BS.correctCount||0,date:fmtDate()});
+  if(typeof logSession==='function') logSession(ARCADE_CATS[BS.cat].name,ARCADE_CATS[BS.cat].icon,BS.correctCount,BS.correctCount,BS.startTs);
   const xpEarn = Math.round(BS.score*0.5);
   const coinEarn = Math.round(BS.score*0.25);
   addXP(xpEarn); addCoins(coinEarn); updateUI();
@@ -452,7 +453,7 @@ function beginRacingRound(){
   RS = {
     cat: currentArcadeCat, canvas, ctx: canvas.getContext('2d'),
     score:0, lives:3, combo:0, speed:110,
-    lane:1, gate:null, running:true, lastTime: performance.now(), correctCount:0,
+    lane:1, gate:null, running:true, lastTime: performance.now(), correctCount:0, startTs:Date.now(),
     roadOffset:0, shake:0
   };
   document.getElementById('racing-score').textContent = '0';
@@ -502,6 +503,7 @@ function endRacingGame(){
   if(gs.sfx){ playBeep(300,0.15,'square'); setTimeout(()=>playBeep(200,0.25,'square'),150); }
   const best = setArcadeBest(RS.cat, RS.score);
   saveLBEntry({name:getPlayerName()||'?',score:RS.score,catName:ARCADE_CATS[RS.cat].name,rounds:RS.correctCount||0,date:fmtDate()});
+  if(typeof logSession==='function') logSession(ARCADE_CATS[RS.cat].name,ARCADE_CATS[RS.cat].icon,RS.correctCount,RS.correctCount,RS.startTs);
   const xpEarn = Math.round(RS.score*0.5);
   const coinEarn = Math.round(RS.score*0.25);
   addXP(xpEarn); addCoins(coinEarn); updateUI();
@@ -598,7 +600,7 @@ function beginTypingRound(){
   document.getElementById('typing-over-overlay').classList.add('hidden');
   document.getElementById('typing-play-area').style.display='';
   TS = {
-    cat:currentArcadeCat, score:0, lives:3, combo:0, correctCount:0,
+    cat:currentArcadeCat, score:0, lives:3, combo:0, correctCount:0, startTs:Date.now(),
     correctAnswer:0, timeLeft:TYPING_TIME, timerIv:null, running:true
   };
   document.getElementById('typing-score').textContent='0';
@@ -689,6 +691,7 @@ function endTypingGame(){
   if(gs.sfx){ playBeep(300,0.15,'square'); setTimeout(()=>playBeep(200,0.25,'square'),150); }
   const best=setArcadeBest(TS.cat,TS.score);
   saveLBEntry({name:getPlayerName()||'?',score:TS.score,catName:ARCADE_CATS[TS.cat].name,rounds:TS.correctCount||0,date:fmtDate()});
+  if(typeof logSession==='function') logSession(ARCADE_CATS[TS.cat].name,ARCADE_CATS[TS.cat].icon,TS.correctCount,TS.correctCount,TS.startTs);
   const xpEarn=Math.round(TS.score*0.5);
   const coinEarn=Math.round(TS.score*0.25);
   addXP(xpEarn); addCoins(coinEarn); updateUI();
@@ -710,7 +713,7 @@ function beginSquaresRound(){
   document.getElementById('sq-start-overlay').classList.add('hidden');
   document.getElementById('sq-over-overlay').classList.add('hidden');
   SQS = {
-    cat:currentArcadeCat, score:0, combo:0, correct:0, total:0,
+    cat:currentArcadeCat, score:0, combo:0, correct:0, total:0, startTs:Date.now(),
     qNum:0, correctAnswer:0, display:'', timeLeft:SQ_TIME, timerIv:null, running:true
   };
   document.getElementById('sq-score').textContent='0';
@@ -806,6 +809,7 @@ function endSquaresGame(){
   if(gs.sfx){ playBeep(300,0.15,'square'); setTimeout(()=>playBeep(200,0.25,'square'),150); }
   const best=setArcadeBest(SQS.cat,SQS.score);
   saveLBEntry({name:getPlayerName()||'?',score:SQS.score,catName:ARCADE_CATS[SQS.cat].name,rounds:SQS.correct,date:fmtDate()});
+  if(typeof logSession==='function') logSession(ARCADE_CATS[SQS.cat].name,ARCADE_CATS[SQS.cat].icon,SQS.correct,SQS.correct,SQS.startTs);
   const xpEarn=Math.round(SQS.score*0.5);
   const coinEarn=Math.round(SQS.score*0.25);
   addXP(xpEarn); addCoins(coinEarn); updateUI();

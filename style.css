@@ -551,6 +551,20 @@ html, body {
 }
 .report-mod-stat { font-size: 0.78rem; color: var(--teal); font-weight: 600; white-space: nowrap; }
 
+/* ── Daily activity report ── */
+.act-section { background:var(--ocean-card2); border:1px solid var(--border); border-radius:14px; padding:12px 14px; }
+.act-section-hd { font-size:0.78rem; font-weight:700; color:var(--text-dim); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.04em; }
+.act-row { display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+.act-row:last-child { border-bottom:none; }
+.act-time { font-size:0.72rem; color:var(--text-dim); white-space:nowrap; width:36px; flex-shrink:0; }
+.act-name { flex:1; font-size:0.82rem; font-weight:700; color:var(--pearl); }
+.act-score { font-size:0.72rem; color:var(--cyan); white-space:nowrap; }
+.act-empty { font-size:0.8rem; color:var(--text-dim); padding:6px 0; }
+.act-hist-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+.act-hist-row:last-child { border-bottom:none; }
+.act-hist-date { font-size:0.78rem; color:var(--text-dim); flex-shrink:0; }
+.act-hist-info { font-size:0.78rem; color:var(--pearl); text-align:right; }
+
 /* ══════════════════════════════════════════════
    PARENT MODE
 ══════════════════════════════════════════════ */
