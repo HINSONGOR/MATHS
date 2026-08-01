@@ -15,6 +15,7 @@ const ARCADE_CATS = {
   mult2:   { mode:'typing',  name:'雙位乘法遊戲', icon:'✏️', gen: genMult2 },
   div2:    { mode:'racing',  name:'雙位除法遊戲', icon:'🏎️', gen: genDiv2 },
   percent: { mode:'racing',  name:'百份比遊戲',   icon:'🏎️', gen: genPercent },
+  sq:      { mode:'squares', name:'平方遊戲',     icon:'²',  gen: genSquares },
 };
 
 let currentArcadeCat = null;
@@ -72,6 +73,10 @@ function genPercent(){
   const mult = table[p];
   const base = mult * arRand(1,10);
   return { text:`${base} 嘅 ${p}% 係幾多？`, answer: arRound2(base*p/100) };
+}
+function genSquares(){
+  const a = arRand(11,19);
+  return { text:`${a} × ${a} = ?`, answer: a*a };
 }
 
 /* ── Distractor generation ── */
@@ -228,6 +233,12 @@ function startArcade(cat){
     document.getElementById('typing-over-overlay').classList.add('hidden');
     document.getElementById('typing-play-area').style.display='none';
     document.getElementById('typing-question').textContent = '準備開始…';
+  } else if(def.mode==='squares'){
+    showScreen('screen-squares');
+    document.getElementById('sq-start-overlay').classList.remove('hidden');
+    document.getElementById('sq-over-overlay').classList.add('hidden');
+    document.getElementById('sq-question').textContent = '準備開始…';
+    document.getElementById('sq-display').textContent = '?';
   } else {
     showScreen('screen-racing');
     document.getElementById('racing-start-title').textContent = def.icon+' '+def.name;
@@ -240,6 +251,7 @@ function exitArcade(){
   stopBalloonGame();
   stopRacingGame();
   stopTypingGame();
+  stopSquaresGame();
   stopArcadeMusic();
   refreshArcadeBest();
   showScreen('screen-arcade-hub');
@@ -685,6 +697,124 @@ function endTypingGame(){
   document.getElementById('typing-final-reward').textContent=`+${xpEarn} XP  +${coinEarn} 🐚`;
   document.getElementById('typing-play-area').style.display='none';
   document.getElementById('typing-over-overlay').classList.remove('hidden');
+}
+
+/* ════════════════════════════════════════════════
+   SQUARES MODE (平方遊戲)
+   ════════════════════════════════════════════════ */
+let SQS = null;
+const SQ_QUESTIONS = 12;
+const SQ_TIME = 10;
+
+function beginSquaresRound(){
+  document.getElementById('sq-start-overlay').classList.add('hidden');
+  document.getElementById('sq-over-overlay').classList.add('hidden');
+  SQS = {
+    cat:currentArcadeCat, score:0, combo:0, correct:0, total:0,
+    qNum:0, correctAnswer:0, display:'', timeLeft:SQ_TIME, timerIv:null, running:true
+  };
+  document.getElementById('sq-score').textContent='0';
+  document.getElementById('sq-combo').textContent='0';
+  document.getElementById('sq-mult').textContent='×1.0';
+  document.getElementById('sq-acc').textContent='100%';
+  startArcadeMusic();
+  nextSquaresQuestion();
+}
+
+function nextSquaresQuestion(){
+  if(!SQS||!SQS.running) return;
+  if(SQS.qNum>=SQ_QUESTIONS){ endSquaresGame(); return; }
+  const q=ARCADE_CATS[SQS.cat].gen();
+  SQS.correctAnswer=q.answer; SQS.display=''; SQS.timeLeft=SQ_TIME;
+  document.getElementById('sq-question').textContent=q.text;
+  document.getElementById('sq-display').textContent='?';
+  document.getElementById('sq-counter').textContent=`${SQS.qNum+1} / ${SQ_QUESTIONS}`;
+  const fill=document.getElementById('sq-bar-fill');
+  if(fill){ fill.style.width='100%'; fill.className='sq-bar-fill'; }
+  if(SQS.timerIv) clearInterval(SQS.timerIv);
+  SQS.timerIv=setInterval(()=>{
+    if(!SQS||!SQS.running){ clearInterval(SQS.timerIv); return; }
+    SQS.timeLeft-=0.1;
+    const pct=Math.max(0,SQS.timeLeft/SQ_TIME*100);
+    const f=document.getElementById('sq-bar-fill');
+    if(f){ f.style.width=pct+'%'; if(pct<30) f.className='sq-bar-fill danger'; }
+    if(SQS.timeLeft<=0){
+      clearInterval(SQS.timerIv);
+      SQS.total++; SQS.combo=0;
+      document.getElementById('sq-combo').textContent='0';
+      document.getElementById('sq-mult').textContent='×1.0';
+      updateSqAcc();
+      if(gs.sfx) playBeep(180,0.2,'sawtooth');
+      SQS.qNum++;
+      setTimeout(()=>{ if(SQS&&SQS.running) nextSquaresQuestion(); },600);
+    }
+  },100);
+}
+
+function sqPadPress(d){
+  if(!SQS||!SQS.running) return;
+  if(SQS.display.length>=5) return;
+  SQS.display+=d;
+  document.getElementById('sq-display').textContent=SQS.display;
+}
+function sqPadBack(){
+  if(!SQS||!SQS.running) return;
+  SQS.display=SQS.display.slice(0,-1);
+  document.getElementById('sq-display').textContent=SQS.display||'?';
+}
+
+function submitSquaresAnswer(){
+  if(!SQS||!SQS.running||!SQS.display) return;
+  clearInterval(SQS.timerIv);
+  const val=parseInt(SQS.display,10);
+  SQS.total++;
+  if(val===SQS.correctAnswer){
+    SQS.correct++; SQS.combo++;
+    const mult=1+Math.min(SQS.combo-1,4)*0.5;
+    const gain=Math.round(10*mult);
+    SQS.score+=gain;
+    document.getElementById('sq-score').textContent=SQS.score;
+    document.getElementById('sq-combo').textContent=SQS.combo;
+    document.getElementById('sq-mult').textContent='×'+mult.toFixed(1);
+    if(gs.sfx) playBeep(880,0.12,'sine');
+    spawnParticles(true);
+  } else {
+    SQS.combo=0;
+    document.getElementById('sq-combo').textContent='0';
+    document.getElementById('sq-mult').textContent='×1.0';
+    if(gs.sfx) playBeep(180,0.2,'sawtooth');
+    spawnParticles(false);
+  }
+  updateSqAcc(); SQS.qNum++;
+  setTimeout(()=>{ if(SQS&&SQS.running) nextSquaresQuestion(); },300);
+}
+
+function updateSqAcc(){
+  const pct=SQS.total>0?Math.round(SQS.correct/SQS.total*100):100;
+  document.getElementById('sq-acc').textContent=pct+'%';
+}
+
+function stopSquaresGame(){
+  if(SQS){ if(SQS.timerIv) clearInterval(SQS.timerIv); SQS.running=false; SQS=null; }
+}
+
+function endSquaresGame(){
+  if(!SQS) return;
+  if(SQS.timerIv) clearInterval(SQS.timerIv);
+  SQS.running=false;
+  stopArcadeMusic();
+  if(gs.sfx){ playBeep(300,0.15,'square'); setTimeout(()=>playBeep(200,0.25,'square'),150); }
+  const best=setArcadeBest(SQS.cat,SQS.score);
+  saveLBEntry({name:getPlayerName()||'?',score:SQS.score,catName:ARCADE_CATS[SQS.cat].name,rounds:SQS.correct,date:fmtDate()});
+  const xpEarn=Math.round(SQS.score*0.5);
+  const coinEarn=Math.round(SQS.score*0.25);
+  addXP(xpEarn); addCoins(coinEarn); updateUI();
+  const acc=SQS.total>0?Math.round(SQS.correct/SQS.total*100):100;
+  document.getElementById('sq-final-score').textContent=SQS.score;
+  document.getElementById('sq-final-best').textContent=best;
+  document.getElementById('sq-final-acc').textContent=`正確率：${acc}%（${SQS.correct}/${SQS.total}）`;
+  document.getElementById('sq-final-reward').textContent=`+${xpEarn} XP  +${coinEarn} 🐚`;
+  document.getElementById('sq-over-overlay').classList.remove('hidden');
 }
 
 /* ── Resize handling ── */

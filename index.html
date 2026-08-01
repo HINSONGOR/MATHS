@@ -523,6 +523,12 @@
       <div class="arc-mode">賽車模式</div>
       <div class="arc-best">最高分：<span id="ab-percent">0</span></div>
     </button>
+    <button class="arc-card arc-violet" onclick="startArcade('sq')">
+      <div class="arc-icon">²</div>
+      <div class="arc-name">平方遊戲</div>
+      <div class="arc-mode">數字鍵盤模式</div>
+      <div class="arc-best">最高分：<span id="ab-sq">0</span></div>
+    </button>
   </div>
   <div class="lb-hub-row">
     <div class="lb-name-set">
@@ -671,6 +677,75 @@
         <button class="big-btn green-btn" onclick="beginTypingRound()">🔄 再玩一次</button>
         <button class="big-btn grey-btn mt8" onclick="exitArcade()">返回樂園</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     ARCADE: SQUARES MODE (平方遊戲)
+══════════════════════════════════════════════ -->
+<div id="screen-squares" class="screen arcade-screen">
+  <div class="sq-top">
+    <button class="back-btn small-back" onclick="exitArcade()">← 退出</button>
+    <div class="sq-progress-wrap">
+      <div class="sq-bar"><div class="sq-bar-fill" id="sq-bar-fill"></div></div>
+    </div>
+    <div class="sq-counter" id="sq-counter">1 / 12</div>
+  </div>
+  <div class="sq-stats">
+    <div class="sq-stat">
+      <div class="sq-stat-label">SCORE</div>
+      <div class="sq-stat-val" id="sq-score">0</div>
+    </div>
+    <div class="sq-stat">
+      <div class="sq-stat-label">COMBO</div>
+      <div class="sq-stat-val" id="sq-combo">0</div>
+      <div class="sq-mult" id="sq-mult">×1.0</div>
+    </div>
+    <div class="sq-stat">
+      <div class="sq-stat-label">ACCURACY</div>
+      <div class="sq-stat-val" id="sq-acc">100%</div>
+    </div>
+  </div>
+  <div class="sq-question-box">
+    <div class="sq-tag">11–19 平方</div>
+    <div class="sq-question" id="sq-question">準備開始…</div>
+  </div>
+  <div class="sq-input-row">
+    <div class="sq-display" id="sq-display">?</div>
+    <button class="sq-submit-btn" onclick="submitSquaresAnswer()">送出</button>
+  </div>
+  <div class="sq-pad">
+    <button onclick="sqPadPress('7')">7</button>
+    <button onclick="sqPadPress('8')">8</button>
+    <button onclick="sqPadPress('9')">9</button>
+    <button onclick="sqPadPress('4')">4</button>
+    <button onclick="sqPadPress('5')">5</button>
+    <button onclick="sqPadPress('6')">6</button>
+    <button onclick="sqPadPress('1')">1</button>
+    <button onclick="sqPadPress('2')">2</button>
+    <button onclick="sqPadPress('3')">3</button>
+    <button class="sq-pad-back" onclick="sqPadBack()">⌫</button>
+    <button onclick="sqPadPress('0')">0</button>
+    <button class="sq-pad-empty"></button>
+  </div>
+  <div class="arc-overlay" id="sq-start-overlay">
+    <div class="arc-overlay-box">
+      <h2>² 平方遊戲</h2>
+      <p>計算 11² 至 19²，用數字鍵盤輸入答案，按「送出」提交！</p>
+      <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:16px">共 12 題，每題限時 10 秒</p>
+      <button class="big-btn green-btn" onclick="beginSquaresRound()">開始遊戲 🚀</button>
+    </div>
+  </div>
+  <div class="arc-overlay hidden" id="sq-over-overlay">
+    <div class="arc-overlay-box">
+      <h2>🎮 遊戲結束！</h2>
+      <p class="arc-final-score">得分：<span id="sq-final-score">0</span></p>
+      <p class="arc-final-best">最高分：<span id="sq-final-best">0</span></p>
+      <p id="sq-final-acc" style="font-size:0.85rem;color:var(--text-dim)"></p>
+      <p class="arc-final-reward" id="sq-final-reward">+0 XP  +0 🐚</p>
+      <button class="big-btn green-btn" onclick="beginSquaresRound()">🔄 再玩一次</button>
+      <button class="big-btn grey-btn mt8" onclick="exitArcade()">返回樂園</button>
     </div>
   </div>
 </div>
