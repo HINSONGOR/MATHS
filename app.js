@@ -2286,7 +2286,7 @@ function renderParentReport(){
   // Daily activity summary
   const dlog=getDailyLog(); const dk=_todayKey();
   const todayD=dlog[dk]||{sessions:[],appMins:0};
-  const todayMins=todayD.appMins||0;
+  const todayMins=(todayD.appMins||0)+Math.round((Date.now()-_appOpenTs)/60000);
   const timeStr=todayMins>=60?`${Math.floor(todayMins/60)}小時${todayMins%60}分鐘`:(todayMins>0?`${todayMins}分鐘`:'少於1分鐘');
   const sessRows=todayD.sessions.length?todayD.sessions.map(s=>`
     <div class="act-row">
