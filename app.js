@@ -1910,6 +1910,7 @@ let gs = {
   pin: '1234',
   progress: {},   // { moduleKey: { done:N, correct:N } }
   wrongQ: [],     // [{ id, mod, q, ans, expl }]
+  globalTimerMode: 0,  // 0=off 1=45s 2=30s
 };
 
 /* ════════════════════════════════════════════════
@@ -2026,6 +2027,14 @@ function updateUI(){
   // Daily button
   const db = document.getElementById('daily-btn');
   if(db) db.disabled = gs.dailyClaimed;
+
+  // Global timer button
+  const gtb = document.getElementById('global-timer-btn');
+  if(gtb){
+    const labels = ['⏱ 計時：關','⏱ 計時：45s','⏱ 計時：30s'];
+    gtb.textContent = labels[gs.globalTimerMode||0];
+    gtb.dataset.mode = gs.globalTimerMode||0;
+  }
 }
 
 /* ════════════════════════════════════════════════
@@ -2080,18 +2089,21 @@ function launchModule(key){
     return;
   }
 
+  const initTimer = gs.globalTimerMode || 0;
   qs = {
     mod: key, questions: pool, idx: 0,
     sessionXP: 0, sessionCoins: 0, sessionCorrect: 0,
-    combo: 0, timerMode: 0, timerInterval: null, timerLeft: 0,
+    combo: 0, timerMode: initTimer, timerInterval: null, timerLeft: 0,
     answered: false, startTs: Date.now()
   };
 
   document.getElementById('quiz-mod-name').textContent = MOD_NAMES[key] || key;
   document.getElementById('qlive-xp').textContent   = '0';
   document.getElementById('qlive-coins').textContent = '0';
-  document.getElementById('timer-toggle-btn').textContent = '⏱ 關';
-  document.getElementById('timer-wrap').classList.add('hidden');
+  const timerLabels = ['⏱ 關','⏱ 45s','⏱ 30s'];
+  document.getElementById('timer-toggle-btn').textContent = timerLabels[initTimer];
+  if(initTimer > 0) document.getElementById('timer-wrap').classList.remove('hidden');
+  else              document.getElementById('timer-wrap').classList.add('hidden');
   document.getElementById('combo-badge').classList.add('hidden');
 
   showScreen('screen-quiz');
@@ -2346,6 +2358,16 @@ function cycleTimer(){
   if(qs.timerMode===0){ btn.textContent='⏱ 關'; wrap.classList.add('hidden'); stopTimer(); }
   else if(qs.timerMode===1){ btn.textContent='⏱ 45s'; wrap.classList.remove('hidden'); if(qs.answered===false) startTimer(45); }
   else { btn.textContent='⏱ 30s'; wrap.classList.remove('hidden'); if(qs.answered===false) startTimer(30); }
+  // keep global setting in sync
+  gs.globalTimerMode = qs.timerMode;
+  saveState();
+  updateUI();
+}
+
+function cycleGlobalTimer(){
+  gs.globalTimerMode = ((gs.globalTimerMode||0) + 1) % 3;
+  saveState();
+  updateUI();
 }
 
 function startTimer(secs){

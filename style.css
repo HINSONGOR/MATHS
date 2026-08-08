@@ -213,11 +213,29 @@ html, body {
 .daily-btn:disabled { opacity: 0.4; }
 
 /* Section Header */
+.section-hd-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-right: 14px;
+}
 .section-hd {
   padding: 14px 14px 8px;
   font-size: 1rem; font-weight: 800;
   color: var(--cyan);
   letter-spacing: 0.5px;
+}
+.global-timer-btn {
+  background: rgba(255,255,255,0.07); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--pearl);
+  font-size: 0.8rem; font-weight: 700;
+  padding: 6px 12px; cursor: pointer; white-space: nowrap;
+  transition: background 0.15s;
+}
+.global-timer-btn:active { background: rgba(0,200,212,0.18); }
+.global-timer-btn[data-mode="1"],
+.global-timer-btn[data-mode="2"] {
+  background: rgba(0,200,212,0.15);
+  border-color: var(--cyan);
+  color: var(--cyan);
 }
 
 /* ══════════════════════════════════════════════

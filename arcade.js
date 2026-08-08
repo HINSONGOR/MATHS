@@ -26,11 +26,11 @@ function arRand(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
 function arRound2(n){ return Math.round(n*100)/100; }
 
 function genMult(){
-  const a = arRand(2,12), b = arRand(2,12);
+  const a = arRand(6,12), b = arRand(6,12);
   return { text:`${a} × ${b} = ?`, answer: a*b };
 }
 function genDiv(){
-  const b = arRand(2,12), c = arRand(2,12), a = b*c;
+  const b = arRand(6,12), c = arRand(2,12), a = b*c;
   return { text:`${a} ÷ ${b} = ?`, answer: c };
 }
 function genAddSub(){
