@@ -125,11 +125,11 @@
       <div class="mc-xp">+8 XP / 題</div>
       <div class="mc-bar"><div class="mc-bar-fill" id="pb-decimal"></div></div>
     </button>
-    <button class="mod-card mc-purple" onclick="launchModule('percent')">
-      <div class="mc-icon">📊</div>
-      <div class="mc-name">百分率燈塔</div>
-      <div class="mc-xp">+10 XP / 題</div>
-      <div class="mc-bar"><div class="mc-bar-fill" id="pb-percent"></div></div>
+    <button class="mod-card mc-purple" onclick="showScreen('screen-pct-hub')">
+      <div class="mc-icon">💯</div>
+      <div class="mc-name">百份數</div>
+      <div class="mc-xp">6 個專題 ›</div>
+      <div class="mc-bar"><div class="mc-bar-fill" style="width:0%"></div></div>
     </button>
     <button class="mod-card mc-orange" onclick="launchModule('ratio')">
       <div class="mc-icon">⚖️</div>
@@ -218,6 +218,56 @@
     </button>
   </div>
 
+</div>
+
+<!-- ══════════════════════════════════════════════
+     百份數 SUB-TOPICS
+══════════════════════════════════════════════ -->
+<div id="screen-pct-hub" class="screen">
+  <div class="quiz-bar">
+    <button class="back-btn" onclick="showScreen('screen-dashboard')">← 返回</button>
+    <div class="quiz-mod-name">💯 百份數</div>
+    <div></div>
+  </div>
+  <div class="modules-grid" style="padding-top:1rem">
+    <div class="mod-section">選擇專題</div>
+    <button class="mod-card mc-purple" onclick="launchModule('pct_pfrac')">
+      <div class="mc-icon">💯</div>
+      <div class="mc-name">① 百分數化分數</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-pct_pfrac"></div></div>
+    </button>
+    <button class="mod-card mc-teal" onclick="launchModule('pct_fracp')">
+      <div class="mc-icon">🍕</div>
+      <div class="mc-name">② 分數化百份數</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-pct_fracp"></div></div>
+    </button>
+    <button class="mod-card mc-blue" onclick="launchModule('pct_pdec')">
+      <div class="mc-icon">💯</div>
+      <div class="mc-name">③ 百份數化小數</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-pct_pdec"></div></div>
+    </button>
+    <button class="mod-card mc-cyan" onclick="launchModule('pct_decp')">
+      <div class="mc-icon">🔡</div>
+      <div class="mc-name">④ 小數化百份數</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-pct_decp"></div></div>
+    </button>
+    <button class="mod-card mc-orange" onclick="launchModule('pct_cmp')">
+      <div class="mc-icon">⚖️</div>
+      <div class="mc-name">⑤ 比較大小</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-pct_cmp"></div></div>
+    </button>
+    <button class="mod-card mc-red" onclick="launchModule('percent')">
+      <div class="mc-icon">🌊</div>
+      <div class="mc-name">⑥ 以上混合</div>
+      <div class="mc-xp">+10 XP / 題</div>
+      <div class="mc-bar"><div class="mc-bar-fill" id="pb-percent"></div></div>
+    </button>
+  </div>
 </div>
 
 <!-- ══════════════════════════════════════════════
